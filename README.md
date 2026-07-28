@@ -65,10 +65,9 @@
 
 ### 系统要求
 
-* Windows 10 / 11（现有 WPF 版本）
-* macOS 13+（`macos/` 下的 SwiftUI 移植，详见 [macos/README.md](macos/README.md)）
+* Windows 10 / 11
 * Minecraft Java Edition
-* Windows 构建需要 .NET 8 Desktop Runtime；macOS 构建需要 Xcode 15+
+* .NET 8 Desktop Runtime
 
 \---
 
@@ -135,7 +134,6 @@ Note: `BlockHelm Launcher` is an independently developed, third-party open-sourc
 
 ### System Requirements
 
-* Windows 10 / 11 (existing WPF build)
-* macOS 13+ (SwiftUI port under [`macos/`](macos/README.md))
+* Windows 10 / 11
 * Minecraft: Java Edition
-* Windows builds require the .NET 8 Desktop Runtime; macOS builds require Xcode 15+
+* .NET 8 Desktop Runtime

@@ -4,12 +4,9 @@
 
 ## 项目原则
 
-这是一个 Minecraft Launcher 工作区，目前包含：
+这是一个基于 WPF、C# 和 .NET 8 的 Minecraft Launcher。
 
-- **Windows**：基于 WPF、C# 和 .NET 8 的现有实现（仓库根目录）
-- **macOS**：基于 SwiftUI 与 Apple 官方框架的移植（[`macos/`](macos/)），详见 [`macos/README.md`](macos/README.md)
-
-Windows 改动必须遵循以下原则：
+所有改动必须遵循以下原则：
 
 - 使用 MVVM，保持 UI、业务、领域模型、基础设施和测试分层清晰。
 - 优先复用现有服务、控件、样式和资源，避免重复实现。
@@ -18,18 +15,9 @@ Windows 改动必须遵循以下原则：
 - 新功能必须考虑日志、友好错误提示、深浅主题和必要测试。
 - 保持改动聚焦，不做无关重构，不破坏现有功能和动画。
 
-macOS / SwiftUI 改动必须遵循：
-
-- 分层镜像 Windows：`BlockHelmDomain` / `BlockHelmApplication` / `BlockHelmInfrastructure` / `BlockHelmApp`
-- ViewModel 不直接做文件/网络细节；通过 Application 协议由 Infrastructure 实现
-- 用户文案走 `Localizable.xcstrings` / `L10n`，主题色走 `ThemePalette`
-- 优先使用 Apple 官方框架（SwiftUI、URLSession、AuthenticationServices、Keychain、ImageIO、Compression）
-- 不要引入 CmlLib / MSAL 等 Windows NuGet 依赖；协议层可对照 Windows 行为实现
-- 在 Linux CI 上以库目标测试为主；完整 App 需在 macOS / Xcode 验证
-
 ## 项目结构与职责
 
-Windows 解决方案包含五个项目：
+解决方案包含五个项目：
 
 ```text
 Launcher.App
@@ -39,22 +27,11 @@ Launcher.Infrastructure
 Launcher.Tests
 ```
 
-macOS Swift 包：
-
-```text
-macos/Sources/BlockHelmApp
-macos/Sources/BlockHelmApplication
-macos/Sources/BlockHelmDomain
-macos/Sources/BlockHelmInfrastructure
-macos/Tests/...
-```
-
 - `Launcher.App`：WPF View、ViewModel、控件、UI Service、资源、样式、主题和窗口壳层。
 - `Launcher.Application`：业务接口、Use Case、Application Service、业务编排和 Repository 接口。
 - `Launcher.Domain`：纯领域模型、枚举和值对象，不依赖 UI 或外部实现。
 - `Launcher.Infrastructure`：文件、JSON、网络、CmlLib、账户、Minecraft 和第三方服务实现。
 - `Launcher.Tests`：Application、Infrastructure、ViewModel、资源契约及必要的回归测试。
-- `BlockHelm*`：上述职责的 SwiftUI / Swift 对应实现；Windows 树在移植期保留作对照。
 
 新增代码应按职责放入对应项目和现有功能目录；先检查已有结构，不为单个类随意创建新层级。
 
@@ -73,10 +50,6 @@ Launcher.Infrastructure -> Launcher.Application
 Launcher.Infrastructure -> Launcher.Domain
 
 Launcher.Tests -> 被测试项目
-
-BlockHelmApp -> BlockHelmApplication / BlockHelmDomain / BlockHelmInfrastructure（组合根）
-BlockHelmApplication -> BlockHelmDomain
-BlockHelmInfrastructure -> BlockHelmApplication / BlockHelmDomain
 ```
 
 禁止：
@@ -85,8 +58,6 @@ BlockHelmInfrastructure -> BlockHelmApplication / BlockHelmDomain
 Launcher.Domain -> Launcher.Application / Launcher.Infrastructure / Launcher.App
 Launcher.Application -> Launcher.Infrastructure / Launcher.App
 Launcher.Infrastructure -> Launcher.App
-BlockHelmDomain -> Application / Infrastructure / App
-BlockHelmApplication -> Infrastructure / App
 ```
 
 不要恢复 `Launcher.Core`，不要新增 `using Launcher.Core`。

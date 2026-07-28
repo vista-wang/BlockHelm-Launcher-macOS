@@ -9,5 +9,3 @@ obj/
 TestResults/
 publish/
 .local-secrets/
-macos/.build/
-macos/.swiftpm/
