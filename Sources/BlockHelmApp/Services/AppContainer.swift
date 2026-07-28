@@ -58,9 +58,11 @@ public final class AppContainer: ObservableObject {
         self.offlineAccounts = DefaultOfflineAccountService()
         self.microsoftAccounts = MicrosoftAccountServiceImpl(
             config: MicrosoftAuthConfig(
-                clientId: ProcessInfo.processInfo.environment["BLOCKHELM_MS_CLIENT_ID"] ?? ""
+                clientId: ProcessInfo.processInfo.environment["BLOCKHELM_MS_CLIENT_ID"] ?? "",
+                redirectURI: ProcessInfo.processInfo.environment["BLOCKHELM_MS_REDIRECT_URI"]
             ),
-            sessionProvider: authSession
+            sessionProvider: authSession,
+            client: client
         )
         self.installTasks = InMemoryInstallTaskQueue()
     }

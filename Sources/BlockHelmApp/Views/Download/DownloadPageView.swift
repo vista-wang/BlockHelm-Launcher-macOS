@@ -71,7 +71,6 @@ struct DownloadPageView: View {
                     Text(LoaderKind.vanilla.displayName).tag(LoaderKind.vanilla)
                     Text(LoaderKind.fabric.displayName).tag(LoaderKind.fabric)
                     Text(LoaderKind.quilt.displayName).tag(LoaderKind.quilt)
-                        .disabled(true)
                     Text(LoaderKind.forge.displayName).tag(LoaderKind.forge)
                         .disabled(true)
                     Text(LoaderKind.neoForge.displayName).tag(LoaderKind.neoForge)

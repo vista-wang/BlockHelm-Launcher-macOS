@@ -54,16 +54,15 @@ public final class HomeViewModel: ObservableObject {
         defer { isLaunching = false }
 
         let launchAccount: LaunchAccount
-        if accountRecord.kind == .microsoft, accountRecord.isOffline == false {
-            launchAccount = LaunchAccount(
-                username: accountRecord.displayName,
-                uuid: accountRecord.uuid ?? OfflineUuid.standard(from: accountRecord.displayName),
-                accessToken: "0",
-                userType: "msa",
-                kind: .microsoft
-            )
-        } else {
-            launchAccount = LaunchAccount.offline(from: accountRecord)
+        do {
+            if accountRecord.kind == .microsoft, accountRecord.isOffline == false {
+                launchAccount = try await container.microsoftAccounts.launchAccount(for: accountRecord)
+            } else {
+                launchAccount = LaunchAccount.offline(from: accountRecord)
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+            return
         }
 
         do {

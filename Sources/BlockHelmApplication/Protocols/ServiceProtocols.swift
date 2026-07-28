@@ -71,6 +71,14 @@ public protocol GameInstallService: Sendable {
         settings: LauncherSettings,
         progress: @escaping @Sendable (LauncherProgress) -> Void
     ) async throws -> GameInstance
+
+    func installQuilt(
+        minecraftVersion: String,
+        loaderVersion: String?,
+        instanceName: String,
+        settings: LauncherSettings,
+        progress: @escaping @Sendable (LauncherProgress) -> Void
+    ) async throws -> GameInstance
 }
 
 public protocol LaunchService: Sendable {
@@ -94,6 +102,8 @@ public protocol OfflineAccountService: Sendable {
 public protocol MicrosoftAccountService: Sendable {
     /// Starts interactive OAuth. On macOS this uses AuthenticationServices.
     func signIn() async throws -> LauncherAccountRecord
+    /// Builds a launch session for a previously signed-in Microsoft account.
+    func launchAccount(for account: LauncherAccountRecord) async throws -> LaunchAccount
 }
 
 @MainActor

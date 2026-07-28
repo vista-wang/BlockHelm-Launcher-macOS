@@ -40,7 +40,7 @@ Or open `Package.swift` in Xcode and run the `BlockHelmApp` scheme.
 
 - Shell navigation (8 pages; Resources / Multiplayer are placeholders)
 - Home launch
-- Download + install (Vanilla, Fabric)
+- Download + install (Vanilla, Fabric, Quilt)
 - Install task list
 - Instance settings
 - Offline accounts + Microsoft auth scaffold (`ASWebAuthenticationSession` + Keychain)
@@ -59,4 +59,9 @@ JSON property names stay **PascalCase** for compatibility with the Windows schem
 
 ## Microsoft auth
 
-Set `BLOCKHELM_MS_CLIENT_ID` in the environment before signing in. The Xbox → Minecraft token exchange is scaffolded and will be completed in a later milestone; offline accounts are fully usable now.
+Set environment variables before signing in:
+
+* `BLOCKHELM_MS_CLIENT_ID` — Azure / Microsoft application (client) ID
+* `BLOCKHELM_MS_REDIRECT_URI` — optional; defaults to `ms-xal-{clientId}://auth`
+
+The Xbox Live → XSTS → Minecraft Services exchange is implemented. Offline accounts remain fully usable without these variables.

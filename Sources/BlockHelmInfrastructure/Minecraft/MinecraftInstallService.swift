@@ -93,6 +93,52 @@ public final class MinecraftInstallService: GameInstallService, @unchecked Senda
         )
     }
 
+    public func installQuilt(
+        minecraftVersion: String,
+        loaderVersion: String?,
+        instanceName: String,
+        settings: LauncherSettings,
+        progress: @escaping @Sendable (LauncherProgress) -> Void
+    ) async throws -> GameInstance {
+        progress(LauncherProgress(stage: InstallProgressStages.preparing, message: "Resolving Quilt", percent: 0))
+
+        let versions = try await MojangGameVersionService(client: client, pathProvider: pathProvider)
+            .listVersions(source: settings.downloadSourcePreference, includeSnapshots: true)
+        guard let vanilla = versions.first(where: { $0.name == minecraftVersion }) else {
+            throw InstallError.versionNotFound(minecraftVersion)
+        }
+
+        try await ensureVersionFiles(
+            versionName: vanilla.name,
+            versionURLString: vanilla.url,
+            source: settings.downloadSourcePreference,
+            progress: progress
+        )
+
+        let loader = try await resolveQuiltLoaderVersion(minecraftVersion: minecraftVersion, preferred: loaderVersion)
+        let profileURL = URL(string: "\(DownloadSourceURLs.quiltMeta)/versions/loader/\(minecraftVersion)/\(loader)/profile/json")!
+        let profileData = try await client.data(from: profileURL)
+        let quiltProfile = try JSONDecoder.minecraft.decode(VersionJSON.self, from: profileData)
+
+        let versionName = "quilt-loader-\(loader)-\(minecraftVersion)"
+        let versionDir = pathProvider.versionDirectory(versionName: versionName)
+        try FileManager.default.createDirectory(at: versionDir, withIntermediateDirectories: true)
+        try profileData.write(to: versionDir.appendingPathComponent("\(versionName).json"), options: .atomic)
+
+        try await downloadLibraries(quiltProfile, source: settings.downloadSourcePreference)
+        try await extractNatives(quiltProfile, versionName: versionName)
+
+        progress(LauncherProgress(stage: InstallProgressStages.finalizingVersion, message: "Creating Quilt instance", percent: 0.95))
+        return try await instanceService.createInstance(
+            name: instanceName.isEmpty ? versionName : instanceName,
+            minecraftVersion: minecraftVersion,
+            versionType: "release",
+            loader: .quilt,
+            loaderVersion: loader,
+            settings: settings
+        )
+    }
+
     private func ensureVersionFiles(
         versionName: String,
         versionURLString: String?,
@@ -135,6 +181,21 @@ public final class MinecraftInstallService: GameInstallService, @unchecked Senda
             let loader: Loader
         }
         let url = URL(string: "\(DownloadSourceURLs.fabricMeta)/versions/loader/\(minecraftVersion)")!
+        let entries = try await client.json([LoaderEntry].self, from: url)
+        if let stable = entries.first(where: { $0.loader.stable == true }) {
+            return stable.loader.version
+        }
+        guard let first = entries.first else { throw InstallError.loaderNotFound }
+        return first.loader.version
+    }
+
+    private func resolveQuiltLoaderVersion(minecraftVersion: String, preferred: String?) async throws -> String {
+        if let preferred, !preferred.isEmpty { return preferred }
+        struct LoaderEntry: Decodable {
+            struct Loader: Decodable { let version: String; let stable: Bool? }
+            let loader: Loader
+        }
+        let url = URL(string: "\(DownloadSourceURLs.quiltMeta)/versions/loader/\(minecraftVersion)")!
         let entries = try await client.json([LoaderEntry].self, from: url)
         if let stable = entries.first(where: { $0.loader.stable == true }) {
             return stable.loader.version

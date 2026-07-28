@@ -11,6 +11,7 @@ public enum DownloadSourceURLs {
     public static let officialManifest = URL(string: "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json")!
     public static let bmclManifest = URL(string: "https://bmclapi2.bangbang93.com/mc/game/version_manifest_v2.json")!
     public static let fabricMeta = "https://meta.fabricmc.net/v2"
+    public static let quiltMeta = "https://meta.quiltmc.org/v3"
     public static let librariesOfficial = "https://libraries.minecraft.net/"
     public static let librariesBmcl = "https://bmclapi2.bangbang93.com/maven/"
     public static let resourcesOfficial = "https://resources.download.minecraft.net/"
@@ -60,6 +61,27 @@ public actor HTTPClient {
             throw URLError(.badServerResponse)
         }
         return data
+    }
+
+    public func data(for request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        let (data, response) = try await session.data(for: request)
+        guard let http = response as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
+        }
+        return (data, http)
+    }
+
+    public func json<T: Decodable>(
+        _ type: T.Type,
+        for request: URLRequest,
+        decoder: JSONDecoder
+    ) async throws -> T {
+        let (data, http) = try await data(for: request)
+        guard (200...299).contains(http.statusCode) else {
+            let detail = String(data: data, encoding: .utf8) ?? "HTTP \(http.statusCode)"
+            throw URLError(.badServerResponse, userInfo: [NSLocalizedDescriptionKey: detail])
+        }
+        return try decoder.decode(T.self, from: data)
     }
 
     public func download(from url: URL, to destination: URL) async throws {

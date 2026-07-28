@@ -78,6 +78,18 @@ public final class DownloadViewModel: ObservableObject {
                         self?.progress = progress.percent
                     }
                 }
+            case .quilt:
+                instance = try await container.installService.installQuilt(
+                    minecraftVersion: version.name,
+                    loaderVersion: nil,
+                    instanceName: instanceName,
+                    settings: settings
+                ) { [weak self] progress in
+                    Task { @MainActor in
+                        self?.status = progress.message
+                        self?.progress = progress.percent
+                    }
+                }
             default:
                 throw InstallUnsupportedError.loaderNotInMVP(loader)
             }
