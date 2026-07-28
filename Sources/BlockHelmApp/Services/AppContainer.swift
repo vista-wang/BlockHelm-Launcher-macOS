@@ -26,7 +26,10 @@ public final class AppContainer: ObservableObject {
     public let microsoftAccounts: MicrosoftAccountService
     public let loaderCatalog: LoaderCatalogService
     public let modrinth: ModrinthService
+    public let curseForge: CurseForgeService
+    public let modpackImport: ModpackImportService
     public let localContent: LocalContentService
+    public let localSaves: LocalSaveService
     public let lanDiscovery: LanWorldDiscoveryService
     public let launchIntegrity: LaunchIntegrityService
     public let installTasks: InMemoryInstallTaskQueue
@@ -49,6 +52,15 @@ public final class AppContainer: ObservableObject {
         let java = MacJavaRuntimeDiscoveryService()
         let authSession = ASWebMicrosoftAuthSessionProvider()
         let catalog = LoaderCatalogServiceImpl(client: client)
+        let versions = MojangGameVersionService(client: client, pathProvider: paths)
+        let installer = MinecraftInstallService(
+            client: client,
+            pathProvider: paths,
+            instanceService: instanceService,
+            javaDiscovery: java,
+            loaderCatalog: catalog
+        )
+        let curseKey = CurseForgeApiKeyResolver(dataDirectory: paths.dataDirectory)
 
         self.pathProvider = paths
         self.httpClient = client
@@ -56,15 +68,9 @@ public final class AppContainer: ObservableObject {
         self.accountStore = accounts
         self.instanceRepository = instances
         self.instanceService = instanceService
-        self.versionService = MojangGameVersionService(client: client, pathProvider: paths)
+        self.versionService = versions
         self.loaderCatalog = catalog
-        self.installService = MinecraftInstallService(
-            client: client,
-            pathProvider: paths,
-            instanceService: instanceService,
-            javaDiscovery: java,
-            loaderCatalog: catalog
-        )
+        self.installService = installer
         self.launchService = MinecraftLaunchService(pathProvider: paths, javaDiscovery: java)
         self.javaDiscovery = java
         self.offlineAccounts = DefaultOfflineAccountService()
@@ -77,7 +83,14 @@ public final class AppContainer: ObservableObject {
             client: client
         )
         self.modrinth = ModrinthServiceImpl(client: client)
+        self.curseForge = CurseForgeServiceImpl(client: client, keyResolver: curseKey)
+        self.modpackImport = ModpackImportServiceImpl(
+            client: client,
+            installService: installer,
+            versionService: versions
+        )
         self.localContent = LocalContentServiceImpl()
+        self.localSaves = LocalSaveServiceImpl()
         self.lanDiscovery = LanWorldDiscoveryServiceImpl()
         self.launchIntegrity = LaunchIntegrityServiceImpl(pathProvider: paths, javaDiscovery: java)
         self.installTasks = InMemoryInstallTaskQueue()

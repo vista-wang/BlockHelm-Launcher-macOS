@@ -45,6 +45,11 @@ public enum L10n {
         public static var instanceName: String { text("Download_InstanceName") }
         public static var loader: String { text("Download_Loader") }
         public static var loaderVersion: String { text("Download_LoaderVersion") }
+        public static var importMrpack: String { text("Download_ImportMrpack") }
+
+        public static func mrpackInstalled(_ name: String) -> String {
+            String(format: text("Download_MrpackInstalled"), name)
+        }
     }
 
     public enum Resources {
@@ -55,11 +60,16 @@ public enum L10n {
         public static var mods: String { text("Resources_Mods") }
         public static var resourcePacks: String { text("Resources_ResourcePacks") }
         public static var shaders: String { text("Resources_Shaders") }
+        public static var worlds: String { text("Resources_Worlds") }
         public static var kind: String { text("Resources_Kind") }
+        public static var source: String { text("Resources_Source") }
+        public static var modrinth: String { text("Resources_Modrinth") }
+        public static var curseForge: String { text("Resources_CurseForge") }
         public static var noMods: String { text("Resources_NoMods") }
         public static var noContent: String { text("Resources_NoContent") }
         public static var needInstance: String { text("Resources_NeedInstance") }
         public static var installDeps: String { text("Resources_InstallDeps") }
+        public static var curseForgeKeyMissing: String { text("Resources_CurseForgeKeyMissing") }
 
         public static func resultCount(_ count: Int) -> String {
             String(format: text("Resources_ResultCount"), count)
@@ -74,12 +84,24 @@ public enum L10n {
         }
     }
 
+    public enum Saves {
+        public static var title: String { text("Saves_Title") }
+        public static var empty: String { text("Saves_Empty") }
+        public static var importZip: String { text("Saves_ImportZip") }
+
+        public static func imported(_ name: String) -> String {
+            String(format: text("Saves_Imported"), name)
+        }
+    }
+
     public enum Multiplayer {
         public static var scan: String { text("Multiplayer_Scan") }
         public static var stop: String { text("Multiplayer_Stop") }
         public static var hint: String { text("Multiplayer_Hint") }
         public static var empty: String { text("Multiplayer_Empty") }
         public static var copy: String { text("Multiplayer_Copy") }
+        public static var terracottaTitle: String { text("Multiplayer_TerracottaTitle") }
+        public static var terracottaUnavailable: String { text("Multiplayer_TerracottaUnavailable") }
 
         public static func found(_ count: Int) -> String {
             String(format: text("Multiplayer_Found"), count)

@@ -10,12 +10,14 @@ public enum ModrinthProjectKind: String, Sendable, CaseIterable, Hashable {
     case mod
     case resourcepack
     case shader
+    case world
 
     public var folderName: String {
         switch self {
         case .mod: return "mods"
         case .resourcepack: return "resourcepacks"
         case .shader: return "shaderpacks"
+        case .world: return "saves"
         }
     }
 
@@ -24,7 +26,28 @@ public enum ModrinthProjectKind: String, Sendable, CaseIterable, Hashable {
         case .mod: return "mod"
         case .resourcepack: return "resourcepack"
         case .shader: return "shader"
+        case .world: return "world"
         }
+    }
+}
+
+public enum ResourceCatalogSource: String, Sendable, CaseIterable, Hashable {
+    case modrinth
+    case curseForge
+}
+
+public struct LocalSave: Identifiable, Sendable, Equatable, Hashable {
+    public var id: String { directoryName }
+    public var name: String
+    public var directoryName: String
+    public var fullPath: String
+    public var createdAt: Date
+
+    public init(name: String, directoryName: String, fullPath: String, createdAt: Date = Date()) {
+        self.name = name
+        self.directoryName = directoryName
+        self.fullPath = fullPath
+        self.createdAt = createdAt
     }
 }
 

@@ -36,6 +36,8 @@ public final class LocalContentServiceImpl: LocalContentService, @unchecked Send
                 if name.hasSuffix(".zip") || name.hasSuffix(".jar") { enabled = true }
                 else if name.hasSuffix(".zip.disabled") || name.hasSuffix(".jar.disabled") { enabled = false }
                 else { return nil }
+            case .world:
+                return nil
             }
             let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize).map(Int64.init) ?? 0
             return LocalContentItem(

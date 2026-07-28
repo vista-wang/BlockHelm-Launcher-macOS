@@ -6,10 +6,12 @@
 
 import SwiftUI
 import BlockHelmDomain
+import UniformTypeIdentifiers
 
 struct GameSettingsPageView: View {
     @EnvironmentObject private var main: MainViewModel
     @Environment(\.themePalette) private var palette
+    @State private var isImportingSave = false
 
     var body: some View {
         HSplitView {
@@ -61,33 +63,55 @@ struct GameSettingsPageView: View {
                             Text(L10n.Resources.mods).tag(ModrinthProjectKind.mod)
                             Text(L10n.Resources.resourcePacks).tag(ModrinthProjectKind.resourcepack)
                             Text(L10n.Resources.shaders).tag(ModrinthProjectKind.shader)
+                            Text(L10n.Resources.worlds).tag(ModrinthProjectKind.world)
                         }
                         .pickerStyle(.segmented)
                         .onChange(of: main.gameSettings.contentKind) { _ in
                             Task { await main.gameSettings.reloadContent() }
                         }
                     }
-                    Section(contentSectionTitle) {
-                        if main.gameSettings.contentItems.isEmpty {
-                            Text(L10n.Resources.noContent)
-                                .foregroundStyle(palette.secondaryText)
-                        } else {
-                            ForEach(main.gameSettings.contentItems) { item in
-                                HStack {
-                                    Toggle(item.displayName, isOn: Binding(
-                                        get: { item.isEnabled },
-                                        set: { _ in
-                                            Task { await main.gameSettings.toggleContent(item) }
+                    if main.gameSettings.showingSaves {
+                        Section(L10n.Saves.title) {
+                            Button(L10n.Saves.importZip) { isImportingSave = true }
+                            if main.gameSettings.saves.isEmpty {
+                                Text(L10n.Saves.empty)
+                                    .foregroundStyle(palette.secondaryText)
+                            } else {
+                                ForEach(main.gameSettings.saves) { save in
+                                    HStack {
+                                        Text(save.name)
+                                        Spacer()
+                                        Button(L10n.Common.delete, role: .destructive) {
+                                            Task { await main.gameSettings.deleteSave(save) }
                                         }
-                                    ))
-                                    Spacer()
-                                    Text(ByteCountFormatter.string(fromByteCount: item.fileSize, countStyle: .file))
-                                        .font(.caption)
-                                        .foregroundStyle(palette.secondaryText)
-                                    Button(L10n.Common.delete, role: .destructive) {
-                                        Task { await main.gameSettings.deleteContent(item) }
+                                        .buttonStyle(.borderless)
                                     }
-                                    .buttonStyle(.borderless)
+                                }
+                            }
+                        }
+                    } else {
+                        Section(contentSectionTitle) {
+                            if main.gameSettings.contentItems.isEmpty {
+                                Text(L10n.Resources.noContent)
+                                    .foregroundStyle(palette.secondaryText)
+                            } else {
+                                ForEach(main.gameSettings.contentItems) { item in
+                                    HStack {
+                                        Toggle(item.displayName, isOn: Binding(
+                                            get: { item.isEnabled },
+                                            set: { _ in
+                                                Task { await main.gameSettings.toggleContent(item) }
+                                            }
+                                        ))
+                                        Spacer()
+                                        Text(ByteCountFormatter.string(fromByteCount: item.fileSize, countStyle: .file))
+                                            .font(.caption)
+                                            .foregroundStyle(palette.secondaryText)
+                                        Button(L10n.Common.delete, role: .destructive) {
+                                            Task { await main.gameSettings.deleteContent(item) }
+                                        }
+                                        .buttonStyle(.borderless)
+                                    }
                                 }
                             }
                         }
@@ -104,6 +128,9 @@ struct GameSettingsPageView: View {
                             }
                         }
                     }
+                    if let status = main.gameSettings.statusMessage {
+                        Text(status).foregroundStyle(palette.secondaryText)
+                    }
                     if let error = main.gameSettings.errorMessage {
                         Text(error).foregroundStyle(.red)
                     }
@@ -116,6 +143,23 @@ struct GameSettingsPageView: View {
             }
         }
         .task { await main.gameSettings.reload() }
+        .fileImporter(
+            isPresented: $isImportingSave,
+            allowedContentTypes: [.zip],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                guard let url = urls.first else { return }
+                let scoped = url.startAccessingSecurityScopedResource()
+                Task {
+                    defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+                    await main.gameSettings.importSave(from: url)
+                }
+            case .failure(let error):
+                main.gameSettings.errorMessage = error.localizedDescription
+            }
+        }
     }
 
     private var contentSectionTitle: String {
@@ -123,6 +167,7 @@ struct GameSettingsPageView: View {
         case .mod: return L10n.Resources.mods
         case .resourcepack: return L10n.Resources.resourcePacks
         case .shader: return L10n.Resources.shaders
+        case .world: return L10n.Saves.title
         }
     }
 

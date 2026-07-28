@@ -13,6 +13,7 @@ public final class GameSettingsViewModel: ObservableObject {
     @Published public var selected: GameInstance?
     @Published public var contentKind: ModrinthProjectKind = .mod
     @Published public var contentItems: [LocalContentItem] = []
+    @Published public var saves: [LocalSave] = []
     @Published public var errorMessage: String?
     @Published public var statusMessage: String?
 
@@ -23,6 +24,7 @@ public final class GameSettingsViewModel: ObservableObject {
     }
 
     public var mods: [LocalContentItem] { contentItems.filter { $0.kind == .mod } }
+    public var showingSaves: Bool { contentKind == .world }
 
     public func reload() async {
         do {
@@ -46,10 +48,17 @@ public final class GameSettingsViewModel: ObservableObject {
     public func reloadContent() async {
         guard let selected else {
             contentItems = []
+            saves = []
             return
         }
         do {
-            contentItems = try await container.localContent.list(instance: selected, kind: contentKind)
+            if contentKind == .world {
+                contentItems = []
+                saves = try await container.localSaves.listSaves(instance: selected)
+            } else {
+                saves = []
+                contentItems = try await container.localContent.list(instance: selected, kind: contentKind)
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -80,6 +89,27 @@ public final class GameSettingsViewModel: ObservableObject {
     public func deleteContent(_ item: LocalContentItem) async {
         do {
             try await container.localContent.delete(item)
+            await reloadContent()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    public func importSave(from url: URL) async {
+        guard let selected else { return }
+        do {
+            let save = try await container.localSaves.importFromZip(instance: selected, archiveURL: url)
+            statusMessage = L10n.Saves.imported(save.name)
+            contentKind = .world
+            await reloadContent()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    public func deleteSave(_ save: LocalSave) async {
+        do {
+            try await container.localSaves.delete(save)
             await reloadContent()
         } catch {
             errorMessage = error.localizedDescription

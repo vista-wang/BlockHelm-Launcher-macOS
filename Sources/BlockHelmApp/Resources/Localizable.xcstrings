@@ -269,6 +269,84 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已安装 %@" } }
       }
     },
+    "Resources_Worlds" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Worlds" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "世界" } }
+      }
+    },
+    "Resources_Source" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Source" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "来源" } }
+      }
+    },
+    "Resources_Modrinth" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Modrinth" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Modrinth" } }
+      }
+    },
+    "Resources_CurseForge" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "CurseForge" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "CurseForge" } }
+      }
+    },
+    "Resources_CurseForgeKeyMissing" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "CurseForge API key not configured. Set CURSEFORGE_API_KEY or add BHL/.local-secrets/curseforge.key." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未配置 CurseForge API Key。请设置 CURSEFORGE_API_KEY，或在 BHL/.local-secrets/curseforge.key 中写入密钥。" } }
+      }
+    },
+    "Download_ImportMrpack" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Import .mrpack" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导入 .mrpack" } }
+      }
+    },
+    "Download_MrpackInstalled" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Imported modpack %@" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已导入整合包 %@" } }
+      }
+    },
+    "Saves_Title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Worlds" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "存档" } }
+      }
+    },
+    "Saves_Empty" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No worlds in this instance yet." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "该实例还没有存档。" } }
+      }
+    },
+    "Saves_ImportZip" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Import world zip…" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导入世界压缩包…" } }
+      }
+    },
+    "Saves_Imported" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Imported world %@" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已导入世界 %@" } }
+      }
+    },
+    "Multiplayer_TerracottaTitle" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Terracotta" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Terracotta" } }
+      }
+    },
+    "Multiplayer_TerracottaUnavailable" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Terracotta remote play is Windows-only and is not available on macOS." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Terracotta 远程联机仅支持 Windows，macOS 暂不可用。" } }
+      }
+    },
     "Account_AddOffline" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Add offline account" } },

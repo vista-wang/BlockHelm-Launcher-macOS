@@ -11,6 +11,7 @@ import BlockHelmDomain
 public final class ResourcesViewModel: ObservableObject {
     @Published public var instances: [GameInstance] = []
     @Published public var selectedInstanceId: String?
+    @Published public var source: ResourceCatalogSource = .modrinth
     @Published public var kind: ModrinthProjectKind = .mod
     @Published public var query: String = ""
     @Published public var projects: [ModrinthProject] = []
@@ -30,13 +31,17 @@ public final class ResourcesViewModel: ObservableObject {
         instances.first { $0.id == selectedInstanceId }
     }
 
+    public var curseForgeConfigured: Bool {
+        container.curseForge.isConfigured
+    }
+
     public func reloadInstances() async {
         do {
             let all = try await container.instanceService.listInstances()
             switch kind {
             case .mod:
                 instances = all.filter { $0.loader != .vanilla }
-            case .resourcepack, .shader:
+            case .resourcepack, .shader, .world:
                 instances = all
             }
             if selectedInstanceId == nil || !instances.contains(where: { $0.id == selectedInstanceId }) {
@@ -52,16 +57,31 @@ public final class ResourcesViewModel: ObservableObject {
             errorMessage = L10n.Resources.needInstance
             return
         }
+        if source == .curseForge, !curseForgeConfigured {
+            errorMessage = L10n.Resources.curseForgeKeyMissing
+            projects = []
+            return
+        }
         isSearching = true
         errorMessage = nil
         defer { isSearching = false }
         do {
-            projects = try await container.modrinth.searchProjects(
-                query: query,
-                kind: kind,
-                minecraftVersion: instance.minecraftVersion,
-                loader: instance.loader
-            )
+            switch source {
+            case .modrinth:
+                projects = try await container.modrinth.searchProjects(
+                    query: query,
+                    kind: kind,
+                    minecraftVersion: instance.minecraftVersion,
+                    loader: instance.loader
+                )
+            case .curseForge:
+                projects = try await container.curseForge.searchProjects(
+                    query: query,
+                    kind: kind,
+                    minecraftVersion: instance.minecraftVersion,
+                    loader: instance.loader
+                )
+            }
             status = L10n.Resources.resultCount(projects.count)
         } catch {
             errorMessage = error.localizedDescription
@@ -74,24 +94,33 @@ public final class ResourcesViewModel: ObservableObject {
         errorMessage = nil
         defer { installingProjectId = nil }
         do {
-            let paths = try await container.modrinth.installLatestCompatible(
-                project: project,
-                instance: instance,
-                installDependencies: installDependencies && kind == .mod
-            ) { [weak self] progress in
-                Task { @MainActor in
-                    self?.status = progress.message
+            let paths: [String]
+            switch source {
+            case .modrinth:
+                paths = try await container.modrinth.installLatestCompatible(
+                    project: project,
+                    instance: instance,
+                    installDependencies: installDependencies && kind == .mod
+                ) { [weak self] progress in
+                    Task { @MainActor in
+                        self?.status = progress.message
+                    }
+                }
+            case .curseForge:
+                paths = try await container.curseForge.installLatestCompatible(
+                    project: project,
+                    instance: instance,
+                    installDependencies: installDependencies && kind == .mod
+                ) { [weak self] progress in
+                    Task { @MainActor in
+                        self?.status = progress.message
+                    }
                 }
             }
             let names = paths.map { URL(fileURLWithPath: $0).lastPathComponent }.joined(separator: ", ")
             status = L10n.Resources.installed(names)
-            await mainGameSettingsReload()
         } catch {
             errorMessage = error.localizedDescription
         }
-    }
-
-    private func mainGameSettingsReload() async {
-        // Best-effort: resources page doesn't own game settings VM.
     }
 }

@@ -33,6 +33,12 @@ struct MultiplayerPageView: View {
             Text(L10n.Multiplayer.hint)
                 .foregroundStyle(palette.secondaryText)
 
+            GroupBox(L10n.Multiplayer.terracottaTitle) {
+                Text(L10n.Multiplayer.terracottaUnavailable)
+                    .foregroundStyle(palette.secondaryText)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
             if main.multiplayer.worlds.isEmpty {
                 EmptyStateView(title: L10n.Page.multiplayer, systemImage: "person.2.fill")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)

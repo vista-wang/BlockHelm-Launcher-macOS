@@ -136,6 +136,23 @@ public final class ModrinthServiceImpl: ModrinthService, @unchecked Sendable {
             }
         }
 
+        progress(LauncherProgress(
+            stage: InstallProgressStages.completingFiles,
+            message: "Downloading \(file.filename)",
+            percent: min(0.4 + Double(depth) * 0.1, 0.9)
+        ))
+
+        if kind == .world {
+            let path = try await WorldInstallHelper.installWorldArchive(
+                from: fileURL,
+                preferredName: title,
+                instance: instance,
+                client: client
+            )
+            installed.append(path)
+            return
+        }
+
         let folder = URL(fileURLWithPath: instance.instanceDirectory)
             .appendingPathComponent(kind.folderName, isDirectory: true)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
@@ -144,12 +161,6 @@ public final class ModrinthServiceImpl: ModrinthService, @unchecked Sendable {
             installed.append(destination.path)
             return
         }
-
-        progress(LauncherProgress(
-            stage: InstallProgressStages.completingFiles,
-            message: "Downloading \(file.filename)",
-            percent: min(0.4 + Double(depth) * 0.1, 0.9)
-        ))
         try await client.download(from: fileURL, to: destination)
 
         if let expected = file.sha512, !expected.isEmpty {

@@ -21,6 +21,7 @@ public final class DownloadViewModel: ObservableObject {
     @Published public var status: String = ""
     @Published public var progress: Double?
     @Published public var errorMessage: String?
+    @Published public var isImportingMrpack = false
 
     private let container: AppContainer
 
@@ -154,6 +155,37 @@ public final class DownloadViewModel: ObservableObject {
             task.detail = instance.name
             container.installTasks.update(task)
             status = "Installed \(instance.name)"
+        } catch {
+            task.state = .failed
+            task.errorMessage = error.localizedDescription
+            container.installTasks.update(task)
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    public func importMrpack(from url: URL, settings: LauncherSettings) async {
+        isImportingMrpack = true
+        errorMessage = nil
+        defer { isImportingMrpack = false }
+
+        var task = InstallTask(title: url.lastPathComponent, state: .running)
+        container.installTasks.enqueue(task)
+        do {
+            let instance = try await container.modpackImport.importMrpack(
+                archiveURL: url,
+                instanceName: instanceName.isEmpty ? nil : instanceName,
+                settings: settings
+            ) { [weak self] progress in
+                Task { @MainActor in
+                    self?.status = progress.message
+                    self?.progress = progress.percent
+                }
+            }
+            task.state = .completed
+            task.progress = 1
+            task.detail = instance.name
+            container.installTasks.update(task)
+            status = L10n.Download.mrpackInstalled(instance.name)
         } catch {
             task.state = .failed
             task.errorMessage = error.localizedDescription

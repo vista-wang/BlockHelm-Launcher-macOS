@@ -7,13 +7,43 @@
 import Foundation
 import Compression
 
-/// Minimal ZIP reader for Minecraft native jars (stored / deflate).
+/// Minimal ZIP reader (stored / deflate) for natives, modpacks, and save archives.
 enum ZipExtractor {
-    static func extract(jar: URL, to directory: URL) throws {
-        let data = try Data(contentsOf: jar)
-        guard data.count >= 22 else { return }
+    struct Entry {
+        var name: String
+        var data: Data
+    }
 
-        // Find End of Central Directory
+    static func extract(jar: URL, to directory: URL) throws {
+        try extractAll(archive: jar, to: directory) { name in
+            !name.lowercased().hasPrefix("meta-inf/")
+        }
+    }
+
+    static func extractAll(
+        archive: URL,
+        to directory: URL,
+        include: (String) -> Bool = { _ in true }
+    ) throws {
+        for entry in try readEntries(from: archive) where include(entry.name) {
+            if entry.name.hasSuffix("/") { continue }
+            let destination = directory.appendingPathComponent(entry.name)
+            try FileManager.default.createDirectory(
+                at: destination.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            try entry.data.write(to: destination, options: .atomic)
+        }
+    }
+
+    static func readFile(named target: String, from archive: URL) throws -> Data? {
+        try readEntries(from: archive).first { $0.name == target || $0.name.hasSuffix("/\(target)") }?.data
+    }
+
+    static func readEntries(from archive: URL) throws -> [Entry] {
+        let data = try Data(contentsOf: archive)
+        guard data.count >= 22 else { return [] }
+
         var eocdOffset: Int?
         let minEOCD = max(0, data.count - 65557)
         for i in stride(from: data.count - 22, through: minEOCD, by: -1) {
@@ -22,10 +52,11 @@ enum ZipExtractor {
                 break
             }
         }
-        guard let eocd = eocdOffset else { return }
+        guard let eocd = eocdOffset else { return [] }
         let centralDirOffset = Int(readUInt32(data, eocd + 16))
         let entryCount = Int(readUInt16(data, eocd + 10))
 
+        var results: [Entry] = []
         var offset = centralDirOffset
         for _ in 0..<entryCount {
             guard offset + 46 <= data.count,
@@ -35,6 +66,7 @@ enum ZipExtractor {
 
             let compression = Int(readUInt16(data, offset + 10))
             let compressedSize = Int(readUInt32(data, offset + 20))
+            let uncompressedSize = Int(readUInt32(data, offset + 24))
             let nameLength = Int(readUInt16(data, offset + 28))
             let extraLength = Int(readUInt16(data, offset + 30))
             let commentLength = Int(readUInt16(data, offset + 32))
@@ -43,9 +75,7 @@ enum ZipExtractor {
             let name = String(data: nameData, encoding: .utf8) ?? ""
             offset += 46 + nameLength + extraLength + commentLength
 
-            if name.hasSuffix("/") || name.isEmpty { continue }
-            if name.lowercased().hasPrefix("meta-inf/") { continue }
-
+            if name.isEmpty { continue }
             guard localHeaderOffset + 30 <= data.count else { continue }
             let localNameLength = Int(readUInt16(data, localHeaderOffset + 26))
             let localExtraLength = Int(readUInt16(data, localHeaderOffset + 28))
@@ -54,29 +84,20 @@ enum ZipExtractor {
             guard dataEnd <= data.count else { continue }
             let payload = data.subdata(in: dataStart..<dataEnd)
 
-            let destination = directory.appendingPathComponent(name)
-            try FileManager.default.createDirectory(
-                at: destination.deletingLastPathComponent(),
-                withIntermediateDirectories: true
-            )
-
+            let bytes: Data?
             switch compression {
             case 0:
-                try payload.write(to: destination, options: .atomic)
+                bytes = payload
             case 8:
-                let uncompressedSize = Int(readUInt32(data, offset - commentLength - extraLength - nameLength - 46 + 24))
-                // Prefer size from central directory field we already passed — re-read:
-                let trueUncompressed = Int(readUInt32(
-                    data,
-                    (offset - (46 + nameLength + extraLength + commentLength)) + 24
-                ))
-                if let inflated = inflate(payload, expectedSize: trueUncompressed > 0 ? trueUncompressed : uncompressedSize) {
-                    try inflated.write(to: destination, options: .atomic)
-                }
+                bytes = inflate(payload, expectedSize: uncompressedSize)
             default:
-                continue
+                bytes = nil
+            }
+            if let bytes {
+                results.append(Entry(name: name, data: bytes))
             }
         }
+        return results
     }
 
     private static func inflate(_ data: Data, expectedSize: Int) -> Data? {
@@ -95,13 +116,9 @@ enum ZipExtractor {
                 COMPRESSION_ZLIB
             )
         }
-        // ZIP uses raw deflate; try COMPRESSION_ZLIB first then raw via zlib wrapper fallback.
         if decodedCount > 0 {
             return Data(bytes: destinationBuffer, count: decodedCount)
         }
-        // Raw deflate (no zlib header): Compression framework COMPRESSION_ZLIB expects zlib wrap.
-        // Prepend a synthetic approach using compression_decode_buffer with COMPRESSION_ZLIB often fails for raw.
-        // Use a minimal inflate by wrapping with zlib header 0x78 0x01 and adler — skip if fails.
         var wrapped = Data([0x78, 0x01])
         wrapped.append(data)
         let decoded2: Int = wrapped.withUnsafeBytes { raw in

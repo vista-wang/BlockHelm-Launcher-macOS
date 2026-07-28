@@ -6,10 +6,12 @@
 
 import SwiftUI
 import BlockHelmDomain
+import UniformTypeIdentifiers
 
 struct DownloadPageView: View {
     @EnvironmentObject private var main: MainViewModel
     @Environment(\.themePalette) private var palette
+    @State private var isImportingMrpack = false
 
     var body: some View {
         HSplitView {
@@ -116,7 +118,17 @@ struct DownloadPageView: View {
                     )
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(main.download.isInstalling || main.download.selectedVersion == nil)
+                .disabled(main.download.isInstalling || main.download.isImportingMrpack || main.download.selectedVersion == nil)
+
+                Button {
+                    isImportingMrpack = true
+                } label: {
+                    Label(
+                        main.download.isImportingMrpack ? L10n.Common.loading : L10n.Download.importMrpack,
+                        systemImage: "shippingbox.fill"
+                    )
+                }
+                .disabled(main.download.isInstalling || main.download.isImportingMrpack)
 
                 Spacer()
             }
@@ -126,6 +138,26 @@ struct DownloadPageView: View {
         .task {
             if main.download.versions.isEmpty {
                 await main.download.refresh(settings: main.settings)
+            }
+        }
+        .fileImporter(
+            isPresented: $isImportingMrpack,
+            allowedContentTypes: [UTType(filenameExtension: "mrpack") ?? .zip, .zip],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                guard let url = urls.first else { return }
+                let scoped = url.startAccessingSecurityScopedResource()
+                Task {
+                    defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+                    await main.download.importMrpack(from: url, settings: main.settings)
+                    await main.home.reload(settings: main.settings, accountState: main.accountState)
+                    await main.gameSettings.reload()
+                    await main.install.reload()
+                }
+            case .failure(let error):
+                main.download.errorMessage = error.localizedDescription
             }
         }
     }

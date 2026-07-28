@@ -118,6 +118,37 @@ public protocol ModrinthService: Sendable {
     ) async throws -> [String]
 }
 
+public protocol CurseForgeService: Sendable {
+    var isConfigured: Bool { get }
+    func searchProjects(
+        query: String,
+        kind: ModrinthProjectKind,
+        minecraftVersion: String,
+        loader: LoaderKind
+    ) async throws -> [ModrinthProject]
+    func installLatestCompatible(
+        project: ModrinthProject,
+        instance: GameInstance,
+        installDependencies: Bool,
+        progress: @escaping @Sendable (LauncherProgress) -> Void
+    ) async throws -> [String]
+}
+
+public protocol ModpackImportService: Sendable {
+    func importMrpack(
+        archiveURL: URL,
+        instanceName: String?,
+        settings: LauncherSettings,
+        progress: @escaping @Sendable (LauncherProgress) -> Void
+    ) async throws -> GameInstance
+}
+
+public protocol LocalSaveService: Sendable {
+    func listSaves(instance: GameInstance) async throws -> [LocalSave]
+    func importFromZip(instance: GameInstance, archiveURL: URL) async throws -> LocalSave
+    func delete(_ save: LocalSave) async throws
+}
+
 public protocol LocalContentService: Sendable {
     func list(instance: GameInstance, kind: ModrinthProjectKind) async throws -> [LocalContentItem]
     func setEnabled(_ item: LocalContentItem, enabled: Bool) async throws -> LocalContentItem

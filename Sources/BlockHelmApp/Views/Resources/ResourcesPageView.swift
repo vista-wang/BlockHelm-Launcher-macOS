@@ -17,13 +17,27 @@ struct ResourcesPageView: View {
                 Text(L10n.Page.resources)
                     .font(.title2.weight(.semibold))
                 Spacer()
+                Picker(L10n.Resources.source, selection: $main.resources.source) {
+                    Text(L10n.Resources.modrinth).tag(ResourceCatalogSource.modrinth)
+                    Text(L10n.Resources.curseForge).tag(ResourceCatalogSource.curseForge)
+                }
+                .pickerStyle(.segmented)
+                .frame(maxWidth: 280)
+                .onChange(of: main.resources.source) { _ in
+                    main.resources.projects = []
+                    main.resources.errorMessage = nil
+                }
+            }
+
+            HStack {
                 Picker(L10n.Resources.kind, selection: $main.resources.kind) {
                     Text(L10n.Resources.mods).tag(ModrinthProjectKind.mod)
                     Text(L10n.Resources.resourcePacks).tag(ModrinthProjectKind.resourcepack)
                     Text(L10n.Resources.shaders).tag(ModrinthProjectKind.shader)
+                    Text(L10n.Resources.worlds).tag(ModrinthProjectKind.world)
                 }
                 .pickerStyle(.segmented)
-                .frame(maxWidth: 420)
+                .frame(maxWidth: 520)
                 .onChange(of: main.resources.kind) { _ in
                     Task {
                         await main.resources.reloadInstances()
@@ -45,6 +59,12 @@ struct ResourcesPageView: View {
                     Toggle(L10n.Resources.installDeps, isOn: $main.resources.installDependencies)
                         .toggleStyle(.checkbox)
                 }
+            }
+
+            if main.resources.source == .curseForge, !main.resources.curseForgeConfigured {
+                Text(L10n.Resources.curseForgeKeyMissing)
+                    .foregroundStyle(.orange)
+                    .font(.caption)
             }
 
             HStack {
