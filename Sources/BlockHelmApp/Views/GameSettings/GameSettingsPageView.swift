@@ -16,7 +16,9 @@ struct GameSettingsPageView: View {
             List(main.gameSettings.instances, selection: Binding(
                 get: { main.gameSettings.selected?.id },
                 set: { id in
-                    main.gameSettings.selected = main.gameSettings.instances.first { $0.id == id }
+                    if let instance = main.gameSettings.instances.first(where: { $0.id == id }) {
+                        Task { await main.gameSettings.select(instance) }
+                    }
                 }
             )) { instance in
                 VStack(alignment: .leading) {
@@ -53,6 +55,31 @@ struct GameSettingsPageView: View {
                             Text("Height \(binding.wrappedValue.windowHeight)")
                         }
                         Toggle("Fullscreen", isOn: binding.launchFullScreen)
+                    }
+                    Section(L10n.Resources.mods) {
+                        if main.gameSettings.mods.isEmpty {
+                            Text(L10n.Resources.noMods)
+                                .foregroundStyle(palette.secondaryText)
+                        } else {
+                            ForEach(main.gameSettings.mods) { mod in
+                                HStack {
+                                    Toggle(mod.displayName, isOn: Binding(
+                                        get: { mod.isEnabled },
+                                        set: { _ in
+                                            Task { await main.gameSettings.toggleMod(mod) }
+                                        }
+                                    ))
+                                    Spacer()
+                                    Text(ByteCountFormatter.string(fromByteCount: mod.fileSize, countStyle: .file))
+                                        .font(.caption)
+                                        .foregroundStyle(palette.secondaryText)
+                                    Button(L10n.Common.delete, role: .destructive) {
+                                        Task { await main.gameSettings.deleteMod(mod) }
+                                    }
+                                    .buttonStyle(.borderless)
+                                }
+                            }
+                        }
                     }
                     Section {
                         Button(L10n.Settings.save) {

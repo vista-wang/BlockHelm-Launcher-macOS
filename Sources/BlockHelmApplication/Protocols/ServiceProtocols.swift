@@ -79,6 +79,48 @@ public protocol GameInstallService: Sendable {
         settings: LauncherSettings,
         progress: @escaping @Sendable (LauncherProgress) -> Void
     ) async throws -> GameInstance
+
+    func installForge(
+        minecraftVersion: String,
+        loaderVersion: String?,
+        instanceName: String,
+        settings: LauncherSettings,
+        progress: @escaping @Sendable (LauncherProgress) -> Void
+    ) async throws -> GameInstance
+
+    func installNeoForge(
+        minecraftVersion: String,
+        loaderVersion: String?,
+        instanceName: String,
+        settings: LauncherSettings,
+        progress: @escaping @Sendable (LauncherProgress) -> Void
+    ) async throws -> GameInstance
+}
+
+public protocol LoaderCatalogService: Sendable {
+    func listForgeVersions(minecraftVersion: String, source: DownloadSourcePreference) async throws -> [LoaderVersionInfo]
+    func listNeoForgeVersions(minecraftVersion: String, source: DownloadSourcePreference) async throws -> [LoaderVersionInfo]
+}
+
+public protocol ModrinthService: Sendable {
+    func searchMods(
+        query: String,
+        minecraftVersion: String,
+        loader: LoaderKind
+    ) async throws -> [ModrinthProject]
+
+    func installLatestCompatible(
+        project: ModrinthProject,
+        instance: GameInstance,
+        progress: @escaping @Sendable (LauncherProgress) -> Void
+    ) async throws -> String
+}
+
+public protocol LocalModService: Sendable {
+    func listMods(instance: GameInstance) async throws -> [LocalModInfo]
+    func setEnabled(_ mod: LocalModInfo, enabled: Bool) async throws -> LocalModInfo
+    func delete(_ mod: LocalModInfo) async throws
+    func modsDirectory(for instance: GameInstance) -> URL
 }
 
 public protocol LaunchService: Sendable {

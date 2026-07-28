@@ -72,9 +72,21 @@ struct DownloadPageView: View {
                     Text(LoaderKind.fabric.displayName).tag(LoaderKind.fabric)
                     Text(LoaderKind.quilt.displayName).tag(LoaderKind.quilt)
                     Text(LoaderKind.forge.displayName).tag(LoaderKind.forge)
-                        .disabled(true)
                     Text(LoaderKind.neoForge.displayName).tag(LoaderKind.neoForge)
-                        .disabled(true)
+                }
+                .onChange(of: main.download.loader) { _ in
+                    Task { await main.download.refreshLoaderVersions(settings: main.settings) }
+                }
+                .onChange(of: main.download.selectedVersion?.name) { _ in
+                    Task { await main.download.refreshLoaderVersions(settings: main.settings) }
+                }
+
+                if main.download.loader == .forge || main.download.loader == .neoForge {
+                    Picker(L10n.Download.loaderVersion, selection: $main.download.selectedLoaderVersion) {
+                        ForEach(main.download.loaderVersions) { item in
+                            Text(item.version).tag(Optional(item.version))
+                        }
+                    }
                 }
 
                 TextField(L10n.Download.instanceName, text: $main.download.instanceName)

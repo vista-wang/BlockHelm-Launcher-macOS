@@ -44,6 +44,29 @@ public enum L10n {
         public static var showSnapshots: String { text("Download_ShowSnapshots") }
         public static var instanceName: String { text("Download_InstanceName") }
         public static var loader: String { text("Download_Loader") }
+        public static var loaderVersion: String { text("Download_LoaderVersion") }
+    }
+
+    public enum Resources {
+        public static var instance: String { text("Resources_Instance") }
+        public static var search: String { text("Resources_Search") }
+        public static var searchPlaceholder: String { text("Resources_SearchPlaceholder") }
+        public static var install: String { text("Resources_Install") }
+        public static var mods: String { text("Resources_Mods") }
+        public static var noMods: String { text("Resources_NoMods") }
+        public static var needInstance: String { text("Resources_NeedInstance") }
+
+        public static func resultCount(_ count: Int) -> String {
+            String(format: text("Resources_ResultCount"), count)
+        }
+
+        public static func downloads(_ count: Int) -> String {
+            String(format: text("Resources_Downloads"), count)
+        }
+
+        public static func installed(_ name: String) -> String {
+            String(format: text("Resources_Installed"), name)
+        }
     }
 
     public enum Account {

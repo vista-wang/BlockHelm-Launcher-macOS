@@ -193,9 +193,35 @@ public final class MicrosoftAccountServiceImpl: MicrosoftAccountService, @unchec
         guard account.kind == .microsoft, account.isOffline == false else {
             return LaunchAccount.offline(from: account)
         }
-        guard let bundle = tokenStore.loadBundle(accountId: account.id) else {
+        guard var bundle = tokenStore.loadBundle(accountId: account.id) else {
             throw MicrosoftAuthError.missingStoredToken
         }
+
+        let needsRefresh: Bool
+        if let expiresAt = bundle.expiresAt {
+            needsRefresh = expiresAt.timeIntervalSinceNow < 120
+        } else {
+            needsRefresh = true
+        }
+
+        if needsRefresh {
+            if let refresh = bundle.microsoftRefreshToken, !refresh.isEmpty, !config.clientId.isEmpty {
+                do {
+                    let oauth = try await refreshMicrosoftToken(refresh)
+                    let xbox = try await authenticateXboxLive(accessToken: oauth.accessToken)
+                    let xsts = try await authorizeXSTS(userToken: xbox.token, userHash: xbox.userHash)
+                    let minecraft = try await loginMinecraft(userHash: xsts.userHash, xstsToken: xsts.token)
+                    bundle.microsoftAccessToken = oauth.accessToken
+                    bundle.microsoftRefreshToken = oauth.refreshToken ?? refresh
+                    bundle.minecraftAccessToken = minecraft.accessToken
+                    bundle.expiresAt = Date().addingTimeInterval(TimeInterval(minecraft.expiresIn ?? 86_400))
+                    try tokenStore.saveBundle(bundle, accountId: account.id)
+                } catch {
+                    // Keep existing token; launch may still succeed if not expired server-side.
+                }
+            }
+        }
+
         return LaunchAccount(
             username: bundle.minecraftUsername,
             uuid: bundle.minecraftUuid,
@@ -203,6 +229,24 @@ public final class MicrosoftAccountServiceImpl: MicrosoftAccountService, @unchec
             userType: "msa",
             kind: .microsoft
         )
+    }
+
+    private func refreshMicrosoftToken(_ refreshToken: String) async throws -> OAuthTokenResponse {
+        var request = URLRequest(url: URL(string: "https://login.microsoftonline.com/consumers/oauth2/v2.0/token")!)
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        let body = [
+            "client_id=\(urlEncode(config.clientId))",
+            "refresh_token=\(urlEncode(refreshToken))",
+            "grant_type=refresh_token",
+            "scope=\(urlEncode(config.scopes.joined(separator: " ")))"
+        ].joined(separator: "&")
+        request.httpBody = Data(body.utf8)
+        do {
+            return try await client.json(OAuthTokenResponse.self, for: request, decoder: JSONDecoder())
+        } catch {
+            throw MicrosoftAuthError.tokenExchangeFailed(error.localizedDescription)
+        }
     }
 
     private struct OAuthTokenResponse: Decodable {

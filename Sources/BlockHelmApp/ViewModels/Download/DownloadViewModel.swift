@@ -12,6 +12,8 @@ public final class DownloadViewModel: ObservableObject {
     @Published public var versions: [MinecraftVersionInfo] = []
     @Published public var selectedVersion: MinecraftVersionInfo?
     @Published public var loader: LoaderKind = .vanilla
+    @Published public var loaderVersions: [LoaderVersionInfo] = []
+    @Published public var selectedLoaderVersion: String?
     @Published public var instanceName: String = ""
     @Published public var showSnapshots = false
     @Published public var isLoading = false
@@ -38,8 +40,40 @@ public final class DownloadViewModel: ObservableObject {
             if selectedVersion == nil {
                 selectedVersion = versions.first
             }
+            await refreshLoaderVersions(settings: settings)
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    public func refreshLoaderVersions(settings: LauncherSettings) async {
+        guard let mc = selectedVersion?.name else {
+            loaderVersions = []
+            selectedLoaderVersion = nil
+            return
+        }
+        do {
+            switch loader {
+            case .forge:
+                loaderVersions = try await container.loaderCatalog.listForgeVersions(
+                    minecraftVersion: mc,
+                    source: settings.downloadSourcePreference
+                )
+            case .neoForge:
+                loaderVersions = try await container.loaderCatalog.listNeoForgeVersions(
+                    minecraftVersion: mc,
+                    source: settings.downloadSourcePreference
+                )
+            default:
+                loaderVersions = []
+            }
+            selectedLoaderVersion = loaderVersions.first?.version
+        } catch {
+            loaderVersions = []
+            selectedLoaderVersion = nil
+            if loader == .forge || loader == .neoForge {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 
@@ -90,8 +124,30 @@ public final class DownloadViewModel: ObservableObject {
                         self?.progress = progress.percent
                     }
                 }
-            default:
-                throw InstallUnsupportedError.loaderNotInMVP(loader)
+            case .forge:
+                instance = try await container.installService.installForge(
+                    minecraftVersion: version.name,
+                    loaderVersion: selectedLoaderVersion,
+                    instanceName: instanceName,
+                    settings: settings
+                ) { [weak self] progress in
+                    Task { @MainActor in
+                        self?.status = progress.message
+                        self?.progress = progress.percent
+                    }
+                }
+            case .neoForge:
+                instance = try await container.installService.installNeoForge(
+                    minecraftVersion: version.name,
+                    loaderVersion: selectedLoaderVersion,
+                    instanceName: instanceName,
+                    settings: settings
+                ) { [weak self] progress in
+                    Task { @MainActor in
+                        self?.status = progress.message
+                        self?.progress = progress.percent
+                    }
+                }
             }
             task.state = .completed
             task.progress = 1
@@ -103,16 +159,6 @@ public final class DownloadViewModel: ObservableObject {
             task.errorMessage = error.localizedDescription
             container.installTasks.update(task)
             errorMessage = error.localizedDescription
-        }
-    }
-}
-
-enum InstallUnsupportedError: LocalizedError {
-    case loaderNotInMVP(LoaderKind)
-    var errorDescription: String? {
-        switch self {
-        case .loaderNotInMVP(let loader):
-            return "\(loader.displayName) install will arrive in a later milestone."
         }
     }
 }

@@ -24,6 +24,9 @@ public final class AppContainer: ObservableObject {
     public let javaDiscovery: JavaRuntimeDiscoveryService
     public let offlineAccounts: OfflineAccountService
     public let microsoftAccounts: MicrosoftAccountService
+    public let loaderCatalog: LoaderCatalogService
+    public let modrinth: ModrinthService
+    public let localMods: LocalModService
     public let installTasks: InMemoryInstallTaskQueue
     public let httpClient: HTTPClient
 
@@ -40,6 +43,7 @@ public final class AppContainer: ObservableObject {
         )
         let java = MacJavaRuntimeDiscoveryService()
         let authSession = ASWebMicrosoftAuthSessionProvider()
+        let catalog = LoaderCatalogServiceImpl(client: client)
 
         self.pathProvider = paths
         self.httpClient = client
@@ -48,10 +52,13 @@ public final class AppContainer: ObservableObject {
         self.instanceRepository = instances
         self.instanceService = instanceService
         self.versionService = MojangGameVersionService(client: client, pathProvider: paths)
+        self.loaderCatalog = catalog
         self.installService = MinecraftInstallService(
             client: client,
             pathProvider: paths,
-            instanceService: instanceService
+            instanceService: instanceService,
+            javaDiscovery: java,
+            loaderCatalog: catalog
         )
         self.launchService = MinecraftLaunchService(pathProvider: paths, javaDiscovery: java)
         self.javaDiscovery = java
@@ -64,6 +71,8 @@ public final class AppContainer: ObservableObject {
             sessionProvider: authSession,
             client: client
         )
+        self.modrinth = ModrinthServiceImpl(client: client)
+        self.localMods = LocalModServiceImpl()
         self.installTasks = InMemoryInstallTaskQueue()
     }
 }

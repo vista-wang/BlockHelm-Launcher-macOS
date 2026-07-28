@@ -47,6 +47,8 @@ public enum InstallProgressStages {
     public static let preparing = "Install.Preparing"
     public static let checkingJava = "Install.CheckingJava"
     public static let downloadingJava = "Install.DownloadingJava"
+    public static let downloadingLoaderInstaller = "Install.DownloadingLoaderInstaller"
+    public static let runningLoaderInstaller = "Install.RunningLoaderInstaller"
     public static let completingFiles = "Install.CompletingFiles"
     public static let finalizingVersion = "Install.FinalizingVersion"
 }

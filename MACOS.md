@@ -40,10 +40,11 @@ Or open `Package.swift` in Xcode and run the `BlockHelmApp` scheme.
 
 - Shell navigation (8 pages; Resources / Multiplayer are placeholders)
 - Home launch
-- Download + install (Vanilla, Fabric, Quilt)
+- Download + install (Vanilla, Fabric, Quilt, Forge, NeoForge)
 - Install task list
-- Instance settings
-- Offline accounts + Microsoft auth scaffold (`ASWebAuthenticationSession` + Keychain)
+- Instance settings + local mod enable/disable/delete
+- Offline accounts + Microsoft auth (Xbox/XSTS/Minecraft + refresh)
+- Modrinth mod search and install into instance `mods/`
 - Settings (theme, language, download source, memory, Java discovery)
 
 ## Data paths

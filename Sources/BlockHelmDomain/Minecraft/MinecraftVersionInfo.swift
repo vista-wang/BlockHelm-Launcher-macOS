@@ -32,12 +32,21 @@ public struct MinecraftVersionInfo: Codable, Sendable, Identifiable, Equatable, 
 
 public struct LoaderVersionInfo: Codable, Sendable, Identifiable, Equatable, Hashable {
     public var version: String
+    public var minecraftVersion: String
+    public var installerURL: String?
     public var isStable: Bool
 
     public var id: String { version }
 
-    public init(version: String, isStable: Bool = true) {
+    public init(
+        version: String,
+        minecraftVersion: String = "",
+        installerURL: String? = nil,
+        isStable: Bool = true
+    ) {
         self.version = version
+        self.minecraftVersion = minecraftVersion
+        self.installerURL = installerURL
         self.isStable = isStable
     }
 }

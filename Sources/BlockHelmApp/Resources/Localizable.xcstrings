@@ -125,6 +125,72 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "加载器" } }
       }
     },
+    "Download_LoaderVersion" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loader version" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "加载器版本" } }
+      }
+    },
+    "Resources_Instance" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Instance" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "实例" } }
+      }
+    },
+    "Resources_Search" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Search" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "搜索" } }
+      }
+    },
+    "Resources_SearchPlaceholder" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Search Modrinth mods" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "搜索 Modrinth Mod" } }
+      }
+    },
+    "Resources_Install" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Install" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "安装" } }
+      }
+    },
+    "Resources_Mods" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Mods" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "模组" } }
+      }
+    },
+    "Resources_NoMods" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No mods in this instance yet." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "该实例还没有模组。" } }
+      }
+    },
+    "Resources_NeedInstance" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Select a Fabric/Forge/Quilt/NeoForge instance first." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请先选择 Fabric/Forge/Quilt/NeoForge 实例。" } }
+      }
+    },
+    "Resources_ResultCount" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%d results" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%d 个结果" } }
+      }
+    },
+    "Resources_Downloads" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%d downloads" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%d 次下载" } }
+      }
+    },
+    "Resources_Installed" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Installed %@" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已安装 %@" } }
+      }
+    },
     "Account_AddOffline" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Add offline account" } },

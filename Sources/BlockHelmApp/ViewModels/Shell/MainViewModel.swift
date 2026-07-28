@@ -61,6 +61,7 @@ public final class MainViewModel: ObservableObject {
     @Published public var install: InstallViewModel
     @Published public var account: AccountViewModel
     @Published public var gameSettings: GameSettingsViewModel
+    @Published public var resources: ResourcesViewModel
     @Published public var settingsPage: SettingsViewModel
 
     public init(container: AppContainer) {
@@ -70,6 +71,7 @@ public final class MainViewModel: ObservableObject {
         self.install = InstallViewModel(container: container)
         self.account = AccountViewModel(container: container)
         self.gameSettings = GameSettingsViewModel(container: container)
+        self.resources = ResourcesViewModel(container: container)
         self.settingsPage = SettingsViewModel(container: container)
     }
 
@@ -82,6 +84,7 @@ public final class MainViewModel: ObservableObject {
             await gameSettings.reload()
             await account.reload()
             await settingsPage.reload()
+            await resources.reloadInstances()
         } catch {
             statusMessage = error.localizedDescription
         }

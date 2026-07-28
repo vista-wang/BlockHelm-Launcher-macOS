@@ -11,7 +11,9 @@ import BlockHelmDomain
 public final class GameSettingsViewModel: ObservableObject {
     @Published public var instances: [GameInstance] = []
     @Published public var selected: GameInstance?
+    @Published public var mods: [LocalModInfo] = []
     @Published public var errorMessage: String?
+    @Published public var statusMessage: String?
 
     private let container: AppContainer
 
@@ -27,6 +29,42 @@ public final class GameSettingsViewModel: ObservableObject {
             } else {
                 self.selected = instances.first
             }
+            await reloadMods()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    public func select(_ instance: GameInstance) async {
+        selected = instance
+        await reloadMods()
+    }
+
+    public func reloadMods() async {
+        guard let selected else {
+            mods = []
+            return
+        }
+        do {
+            mods = try await container.localMods.listMods(instance: selected)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    public func toggleMod(_ mod: LocalModInfo) async {
+        do {
+            _ = try await container.localMods.setEnabled(mod, enabled: !mod.isEnabled)
+            await reloadMods()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    public func deleteMod(_ mod: LocalModInfo) async {
+        do {
+            try await container.localMods.delete(mod)
+            await reloadMods()
         } catch {
             errorMessage = error.localizedDescription
         }

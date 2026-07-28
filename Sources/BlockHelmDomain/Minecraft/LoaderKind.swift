@@ -22,4 +22,15 @@ public enum LoaderKind: Int, Codable, Sendable, CaseIterable, Hashable {
         case .quilt: return "Quilt"
         }
     }
+
+    /// Modrinth / Forge-style loader facet string.
+    public var catalogSlug: String {
+        switch self {
+        case .vanilla: return "vanilla"
+        case .fabric: return "fabric"
+        case .forge: return "forge"
+        case .neoForge: return "neoforge"
+        case .quilt: return "quilt"
+        }
+    }
 }
