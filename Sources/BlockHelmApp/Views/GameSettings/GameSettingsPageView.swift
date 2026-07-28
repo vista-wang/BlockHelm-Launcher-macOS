@@ -56,25 +56,36 @@ struct GameSettingsPageView: View {
                         }
                         Toggle("Fullscreen", isOn: binding.launchFullScreen)
                     }
-                    Section(L10n.Resources.mods) {
-                        if main.gameSettings.mods.isEmpty {
-                            Text(L10n.Resources.noMods)
+                    Section {
+                        Picker(L10n.Resources.kind, selection: $main.gameSettings.contentKind) {
+                            Text(L10n.Resources.mods).tag(ModrinthProjectKind.mod)
+                            Text(L10n.Resources.resourcePacks).tag(ModrinthProjectKind.resourcepack)
+                            Text(L10n.Resources.shaders).tag(ModrinthProjectKind.shader)
+                        }
+                        .pickerStyle(.segmented)
+                        .onChange(of: main.gameSettings.contentKind) { _ in
+                            Task { await main.gameSettings.reloadContent() }
+                        }
+                    }
+                    Section(contentSectionTitle) {
+                        if main.gameSettings.contentItems.isEmpty {
+                            Text(L10n.Resources.noContent)
                                 .foregroundStyle(palette.secondaryText)
                         } else {
-                            ForEach(main.gameSettings.mods) { mod in
+                            ForEach(main.gameSettings.contentItems) { item in
                                 HStack {
-                                    Toggle(mod.displayName, isOn: Binding(
-                                        get: { mod.isEnabled },
+                                    Toggle(item.displayName, isOn: Binding(
+                                        get: { item.isEnabled },
                                         set: { _ in
-                                            Task { await main.gameSettings.toggleMod(mod) }
+                                            Task { await main.gameSettings.toggleContent(item) }
                                         }
                                     ))
                                     Spacer()
-                                    Text(ByteCountFormatter.string(fromByteCount: mod.fileSize, countStyle: .file))
+                                    Text(ByteCountFormatter.string(fromByteCount: item.fileSize, countStyle: .file))
                                         .font(.caption)
                                         .foregroundStyle(palette.secondaryText)
                                     Button(L10n.Common.delete, role: .destructive) {
-                                        Task { await main.gameSettings.deleteMod(mod) }
+                                        Task { await main.gameSettings.deleteContent(item) }
                                     }
                                     .buttonStyle(.borderless)
                                 }
@@ -105,6 +116,14 @@ struct GameSettingsPageView: View {
             }
         }
         .task { await main.gameSettings.reload() }
+    }
+
+    private var contentSectionTitle: String {
+        switch main.gameSettings.contentKind {
+        case .mod: return L10n.Resources.mods
+        case .resourcepack: return L10n.Resources.resourcePacks
+        case .shader: return L10n.Resources.shaders
+        }
     }
 
     private var selectedBinding: Binding<GameInstance>? {

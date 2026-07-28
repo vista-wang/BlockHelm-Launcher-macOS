@@ -11,7 +11,8 @@ import BlockHelmDomain
 public final class GameSettingsViewModel: ObservableObject {
     @Published public var instances: [GameInstance] = []
     @Published public var selected: GameInstance?
-    @Published public var mods: [LocalModInfo] = []
+    @Published public var contentKind: ModrinthProjectKind = .mod
+    @Published public var contentItems: [LocalContentItem] = []
     @Published public var errorMessage: String?
     @Published public var statusMessage: String?
 
@@ -21,6 +22,8 @@ public final class GameSettingsViewModel: ObservableObject {
         self.container = container
     }
 
+    public var mods: [LocalContentItem] { contentItems.filter { $0.kind == .mod } }
+
     public func reload() async {
         do {
             instances = try await container.instanceService.listInstances()
@@ -29,7 +32,7 @@ public final class GameSettingsViewModel: ObservableObject {
             } else {
                 self.selected = instances.first
             }
-            await reloadMods()
+            await reloadContent()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -37,34 +40,47 @@ public final class GameSettingsViewModel: ObservableObject {
 
     public func select(_ instance: GameInstance) async {
         selected = instance
-        await reloadMods()
+        await reloadContent()
     }
 
-    public func reloadMods() async {
+    public func reloadContent() async {
         guard let selected else {
-            mods = []
+            contentItems = []
             return
         }
         do {
-            mods = try await container.localMods.listMods(instance: selected)
+            contentItems = try await container.localContent.list(instance: selected, kind: contentKind)
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
-    public func toggleMod(_ mod: LocalModInfo) async {
+    public func reloadMods() async {
+        contentKind = .mod
+        await reloadContent()
+    }
+
+    public func toggleMod(_ mod: LocalContentItem) async {
+        await toggleContent(mod)
+    }
+
+    public func deleteMod(_ mod: LocalContentItem) async {
+        await deleteContent(mod)
+    }
+
+    public func toggleContent(_ item: LocalContentItem) async {
         do {
-            _ = try await container.localMods.setEnabled(mod, enabled: !mod.isEnabled)
-            await reloadMods()
+            _ = try await container.localContent.setEnabled(item, enabled: !item.isEnabled)
+            await reloadContent()
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
-    public func deleteMod(_ mod: LocalModInfo) async {
+    public func deleteContent(_ item: LocalContentItem) async {
         do {
-            try await container.localMods.delete(mod)
-            await reloadMods()
+            try await container.localContent.delete(item)
+            await reloadContent()
         } catch {
             errorMessage = error.localizedDescription
         }

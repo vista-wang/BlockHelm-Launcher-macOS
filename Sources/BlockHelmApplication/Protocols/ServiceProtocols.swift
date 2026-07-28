@@ -103,8 +103,9 @@ public protocol LoaderCatalogService: Sendable {
 }
 
 public protocol ModrinthService: Sendable {
-    func searchMods(
+    func searchProjects(
         query: String,
+        kind: ModrinthProjectKind,
         minecraftVersion: String,
         loader: LoaderKind
     ) async throws -> [ModrinthProject]
@@ -112,16 +113,30 @@ public protocol ModrinthService: Sendable {
     func installLatestCompatible(
         project: ModrinthProject,
         instance: GameInstance,
+        installDependencies: Bool,
         progress: @escaping @Sendable (LauncherProgress) -> Void
-    ) async throws -> String
+    ) async throws -> [String]
 }
 
-public protocol LocalModService: Sendable {
-    func listMods(instance: GameInstance) async throws -> [LocalModInfo]
-    func setEnabled(_ mod: LocalModInfo, enabled: Bool) async throws -> LocalModInfo
-    func delete(_ mod: LocalModInfo) async throws
-    func modsDirectory(for instance: GameInstance) -> URL
+public protocol LocalContentService: Sendable {
+    func list(instance: GameInstance, kind: ModrinthProjectKind) async throws -> [LocalContentItem]
+    func setEnabled(_ item: LocalContentItem, enabled: Bool) async throws -> LocalContentItem
+    func delete(_ item: LocalContentItem) async throws
+    func directory(for instance: GameInstance, kind: ModrinthProjectKind) -> URL
 }
+
+public protocol LanWorldDiscoveryService: Sendable {
+    func start() async
+    func stop() async
+    func snapshot() async -> [LanWorldAdvertisement]
+}
+
+public protocol LaunchIntegrityService: Sendable {
+    func validate(instance: GameInstance, settings: LauncherSettings) async throws
+}
+
+/// Back-compat alias used by earlier App wiring.
+public typealias LocalModService = LocalContentService
 
 public protocol LaunchService: Sendable {
     func launch(

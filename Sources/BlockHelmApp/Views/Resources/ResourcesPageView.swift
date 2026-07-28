@@ -17,6 +17,22 @@ struct ResourcesPageView: View {
                 Text(L10n.Page.resources)
                     .font(.title2.weight(.semibold))
                 Spacer()
+                Picker(L10n.Resources.kind, selection: $main.resources.kind) {
+                    Text(L10n.Resources.mods).tag(ModrinthProjectKind.mod)
+                    Text(L10n.Resources.resourcePacks).tag(ModrinthProjectKind.resourcepack)
+                    Text(L10n.Resources.shaders).tag(ModrinthProjectKind.shader)
+                }
+                .pickerStyle(.segmented)
+                .frame(maxWidth: 420)
+                .onChange(of: main.resources.kind) { _ in
+                    Task {
+                        await main.resources.reloadInstances()
+                        main.resources.projects = []
+                    }
+                }
+            }
+
+            HStack {
                 Picker(L10n.Resources.instance, selection: $main.resources.selectedInstanceId) {
                     ForEach(main.resources.instances) { instance in
                         Text("\(instance.name) (\(instance.loader.displayName) \(instance.minecraftVersion))")
@@ -24,6 +40,11 @@ struct ResourcesPageView: View {
                     }
                 }
                 .frame(maxWidth: 360)
+
+                if main.resources.kind == .mod {
+                    Toggle(L10n.Resources.installDeps, isOn: $main.resources.installDependencies)
+                        .toggleStyle(.checkbox)
+                }
             }
 
             HStack {
@@ -59,7 +80,10 @@ struct ResourcesPageView: View {
                         }
                         Spacer()
                         Button(L10n.Resources.install) {
-                            Task { await main.resources.install(project) }
+                            Task {
+                                await main.resources.install(project)
+                                await main.gameSettings.reload()
+                            }
                         }
                         .disabled(main.resources.installingProjectId != nil)
                     }

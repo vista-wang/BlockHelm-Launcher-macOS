@@ -26,9 +26,14 @@ public final class AppContainer: ObservableObject {
     public let microsoftAccounts: MicrosoftAccountService
     public let loaderCatalog: LoaderCatalogService
     public let modrinth: ModrinthService
-    public let localMods: LocalModService
+    public let localContent: LocalContentService
+    public let lanDiscovery: LanWorldDiscoveryService
+    public let launchIntegrity: LaunchIntegrityService
     public let installTasks: InMemoryInstallTaskQueue
     public let httpClient: HTTPClient
+
+    /// Back-compat for earlier call sites.
+    public var localMods: LocalContentService { localContent }
 
     public init() {
         let paths = MacLauncherPathProvider()
@@ -72,7 +77,9 @@ public final class AppContainer: ObservableObject {
             client: client
         )
         self.modrinth = ModrinthServiceImpl(client: client)
-        self.localMods = LocalModServiceImpl()
+        self.localContent = LocalContentServiceImpl()
+        self.lanDiscovery = LanWorldDiscoveryServiceImpl()
+        self.launchIntegrity = LaunchIntegrityServiceImpl(pathProvider: paths, javaDiscovery: java)
         self.installTasks = InMemoryInstallTaskQueue()
     }
 }

@@ -11,10 +11,12 @@ import BlockHelmDomain
 public final class ResourcesViewModel: ObservableObject {
     @Published public var instances: [GameInstance] = []
     @Published public var selectedInstanceId: String?
+    @Published public var kind: ModrinthProjectKind = .mod
     @Published public var query: String = ""
     @Published public var projects: [ModrinthProject] = []
     @Published public var isSearching = false
     @Published public var installingProjectId: String?
+    @Published public var installDependencies = true
     @Published public var status: String = ""
     @Published public var errorMessage: String?
 
@@ -30,9 +32,14 @@ public final class ResourcesViewModel: ObservableObject {
 
     public func reloadInstances() async {
         do {
-            instances = try await container.instanceService.listInstances()
-                .filter { $0.loader != .vanilla }
-            if selectedInstanceId == nil {
+            let all = try await container.instanceService.listInstances()
+            switch kind {
+            case .mod:
+                instances = all.filter { $0.loader != .vanilla }
+            case .resourcepack, .shader:
+                instances = all
+            }
+            if selectedInstanceId == nil || !instances.contains(where: { $0.id == selectedInstanceId }) {
                 selectedInstanceId = instances.first?.id
             }
         } catch {
@@ -49,8 +56,9 @@ public final class ResourcesViewModel: ObservableObject {
         errorMessage = nil
         defer { isSearching = false }
         do {
-            projects = try await container.modrinth.searchMods(
+            projects = try await container.modrinth.searchProjects(
                 query: query,
+                kind: kind,
                 minecraftVersion: instance.minecraftVersion,
                 loader: instance.loader
             )
@@ -66,17 +74,24 @@ public final class ResourcesViewModel: ObservableObject {
         errorMessage = nil
         defer { installingProjectId = nil }
         do {
-            let path = try await container.modrinth.installLatestCompatible(
+            let paths = try await container.modrinth.installLatestCompatible(
                 project: project,
-                instance: instance
+                instance: instance,
+                installDependencies: installDependencies && kind == .mod
             ) { [weak self] progress in
                 Task { @MainActor in
                     self?.status = progress.message
                 }
             }
-            status = L10n.Resources.installed(URL(fileURLWithPath: path).lastPathComponent)
+            let names = paths.map { URL(fileURLWithPath: $0).lastPathComponent }.joined(separator: ", ")
+            status = L10n.Resources.installed(names)
+            await mainGameSettingsReload()
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func mainGameSettingsReload() async {
+        // Best-effort: resources page doesn't own game settings VM.
     }
 }

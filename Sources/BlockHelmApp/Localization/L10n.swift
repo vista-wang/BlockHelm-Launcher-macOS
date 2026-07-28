@@ -53,8 +53,13 @@ public enum L10n {
         public static var searchPlaceholder: String { text("Resources_SearchPlaceholder") }
         public static var install: String { text("Resources_Install") }
         public static var mods: String { text("Resources_Mods") }
+        public static var resourcePacks: String { text("Resources_ResourcePacks") }
+        public static var shaders: String { text("Resources_Shaders") }
+        public static var kind: String { text("Resources_Kind") }
         public static var noMods: String { text("Resources_NoMods") }
+        public static var noContent: String { text("Resources_NoContent") }
         public static var needInstance: String { text("Resources_NeedInstance") }
+        public static var installDeps: String { text("Resources_InstallDeps") }
 
         public static func resultCount(_ count: Int) -> String {
             String(format: text("Resources_ResultCount"), count)
@@ -67,6 +72,24 @@ public enum L10n {
         public static func installed(_ name: String) -> String {
             String(format: text("Resources_Installed"), name)
         }
+    }
+
+    public enum Multiplayer {
+        public static var scan: String { text("Multiplayer_Scan") }
+        public static var stop: String { text("Multiplayer_Stop") }
+        public static var hint: String { text("Multiplayer_Hint") }
+        public static var empty: String { text("Multiplayer_Empty") }
+        public static var copy: String { text("Multiplayer_Copy") }
+
+        public static func found(_ count: Int) -> String {
+            String(format: text("Multiplayer_Found"), count)
+        }
+
+        public static func copied(_ address: String) -> String {
+            String(format: text("Multiplayer_Copied"), address)
+        }
+
+        public static var scanning: String { text("Multiplayer_Scanning") }
     }
 
     public enum Account {

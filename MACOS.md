@@ -44,7 +44,10 @@ Or open `Package.swift` in Xcode and run the `BlockHelmApp` scheme.
 - Install task list
 - Instance settings + local mod enable/disable/delete
 - Offline accounts + Microsoft auth (Xbox/XSTS/Minecraft + refresh)
-- Modrinth mod search and install into instance `mods/`
+- Modrinth mods / resource packs / shaders (with required dependency install)
+- Instance local content management (mods, resource packs, shaders)
+- LAN world discovery (UDP 4445)
+- Launch integrity checks before starting the game
 - Settings (theme, language, download source, memory, Java discovery)
 
 ## Data paths

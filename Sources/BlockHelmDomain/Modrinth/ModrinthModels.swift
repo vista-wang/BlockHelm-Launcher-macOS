@@ -6,6 +6,28 @@
 
 import Foundation
 
+public enum ModrinthProjectKind: String, Sendable, CaseIterable, Hashable {
+    case mod
+    case resourcepack
+    case shader
+
+    public var folderName: String {
+        switch self {
+        case .mod: return "mods"
+        case .resourcepack: return "resourcepacks"
+        case .shader: return "shaderpacks"
+        }
+    }
+
+    public var apiProjectType: String {
+        switch self {
+        case .mod: return "mod"
+        case .resourcepack: return "resourcepack"
+        case .shader: return "shader"
+        }
+    }
+}
+
 public struct ModrinthProject: Identifiable, Sendable, Equatable, Hashable {
     public var id: String { projectId }
     public var projectId: String
@@ -14,6 +36,7 @@ public struct ModrinthProject: Identifiable, Sendable, Equatable, Hashable {
     public var description: String
     public var iconUrl: String?
     public var downloads: Int
+    public var kind: ModrinthProjectKind
 
     public init(
         projectId: String,
@@ -21,7 +44,8 @@ public struct ModrinthProject: Identifiable, Sendable, Equatable, Hashable {
         title: String,
         description: String = "",
         iconUrl: String? = nil,
-        downloads: Int = 0
+        downloads: Int = 0,
+        kind: ModrinthProjectKind = .mod
     ) {
         self.projectId = projectId
         self.slug = slug
@@ -29,6 +53,7 @@ public struct ModrinthProject: Identifiable, Sendable, Equatable, Hashable {
         self.description = description
         self.iconUrl = iconUrl
         self.downloads = downloads
+        self.kind = kind
     }
 }
 
@@ -46,6 +71,22 @@ public struct ModrinthVersionFile: Sendable, Equatable, Hashable {
     }
 }
 
+public struct ModrinthDependency: Sendable, Equatable, Hashable {
+    public var projectId: String?
+    public var versionId: String?
+    public var dependencyType: String
+
+    public init(projectId: String? = nil, versionId: String? = nil, dependencyType: String) {
+        self.projectId = projectId
+        self.versionId = versionId
+        self.dependencyType = dependencyType
+    }
+
+    public var isRequired: Bool {
+        dependencyType.lowercased() == "required"
+    }
+}
+
 public struct ModrinthVersionInfo: Identifiable, Sendable, Equatable, Hashable {
     public var id: String
     public var versionNumber: String
@@ -53,6 +94,7 @@ public struct ModrinthVersionInfo: Identifiable, Sendable, Equatable, Hashable {
     public var gameVersions: [String]
     public var loaders: [String]
     public var files: [ModrinthVersionFile]
+    public var dependencies: [ModrinthDependency]
 
     public init(
         id: String,
@@ -60,7 +102,8 @@ public struct ModrinthVersionInfo: Identifiable, Sendable, Equatable, Hashable {
         name: String = "",
         gameVersions: [String] = [],
         loaders: [String] = [],
-        files: [ModrinthVersionFile] = []
+        files: [ModrinthVersionFile] = [],
+        dependencies: [ModrinthDependency] = []
     ) {
         self.id = id
         self.versionNumber = versionNumber
@@ -68,9 +111,58 @@ public struct ModrinthVersionInfo: Identifiable, Sendable, Equatable, Hashable {
         self.gameVersions = gameVersions
         self.loaders = loaders
         self.files = files
+        self.dependencies = dependencies
     }
 
     public var primaryFile: ModrinthVersionFile? {
         files.first(where: \.primary) ?? files.first
     }
+}
+
+public struct LocalContentItem: Identifiable, Sendable, Equatable, Hashable {
+    public var id: String { fileName }
+    public var fileName: String
+    public var filePath: String
+    public var isEnabled: Bool
+    public var fileSize: Int64
+    public var kind: ModrinthProjectKind
+
+    public init(
+        fileName: String,
+        filePath: String,
+        isEnabled: Bool,
+        fileSize: Int64,
+        kind: ModrinthProjectKind
+    ) {
+        self.fileName = fileName
+        self.filePath = filePath
+        self.isEnabled = isEnabled
+        self.fileSize = fileSize
+        self.kind = kind
+    }
+
+    public var displayName: String {
+        fileName
+            .replacingOccurrences(of: ".jar.disabled", with: "")
+            .replacingOccurrences(of: ".zip.disabled", with: "")
+            .replacingOccurrences(of: ".jar", with: "")
+            .replacingOccurrences(of: ".zip", with: "")
+    }
+}
+
+public struct LanWorldAdvertisement: Identifiable, Sendable, Equatable, Hashable {
+    public var id: String { "\(address):\(port)" }
+    public var motd: String
+    public var address: String
+    public var port: Int
+    public var discoveredAt: Date
+
+    public init(motd: String, address: String, port: Int, discoveredAt: Date = Date()) {
+        self.motd = motd
+        self.address = address
+        self.port = port
+        self.discoveredAt = discoveredAt
+    }
+
+    public var joinAddress: String { "\(address):\(port)" }
 }

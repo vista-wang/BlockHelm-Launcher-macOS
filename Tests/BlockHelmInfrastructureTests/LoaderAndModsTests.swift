@@ -29,23 +29,6 @@ final class LoaderCatalogTests: XCTestCase {
 
 final class LocalModServiceTests: XCTestCase {
     func testEnableDisableRoundTrip() async throws {
-        let dir = FileManager.default.temporaryDirectory
-            .appendingPathComponent("bhl-mods-\(UUID().uuidString)", isDirectory: true)
-        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: dir) }
-
-        let jar = dir.appendingPathComponent("demo.jar")
-        try Data([0x50, 0x4B]).write(to: jar)
-
-        let instance = GameInstance(
-            name: "test",
-            minecraftVersion: "1.20.1",
-            loader: .fabric,
-            versionName: "test",
-            instanceDirectory: dir.deletingLastPathComponent().path
-        )
-        // Put mods under instanceDirectory/mods — LocalModService uses instanceDirectory/mods
-        // Override by placing mods at expected path:
         let modsParent = FileManager.default.temporaryDirectory
             .appendingPathComponent("bhl-inst-\(UUID().uuidString)", isDirectory: true)
         let modsDir = modsParent.appendingPathComponent("mods", isDirectory: true)
@@ -54,7 +37,7 @@ final class LocalModServiceTests: XCTestCase {
         try Data([0x50, 0x4B]).write(to: modJar)
         defer { try? FileManager.default.removeItem(at: modsParent) }
 
-        let service = LocalModServiceImpl()
+        let service = LocalContentServiceImpl()
         let inst = GameInstance(
             name: "test",
             minecraftVersion: "1.20.1",
@@ -62,7 +45,7 @@ final class LocalModServiceTests: XCTestCase {
             versionName: "test",
             instanceDirectory: modsParent.path
         )
-        var mods = try await service.listMods(instance: inst)
+        var mods = try await service.list(instance: inst, kind: .mod)
         XCTAssertEqual(mods.count, 1)
         XCTAssertTrue(mods[0].isEnabled)
 
@@ -70,11 +53,19 @@ final class LocalModServiceTests: XCTestCase {
         XCTAssertFalse(disabled.isEnabled)
         XCTAssertTrue(disabled.fileName.hasSuffix(".jar.disabled"))
 
-        mods = try await service.listMods(instance: inst)
+        mods = try await service.list(instance: inst, kind: .mod)
         XCTAssertEqual(mods.count, 1)
         XCTAssertFalse(mods[0].isEnabled)
 
         let enabled = try await service.setEnabled(mods[0], enabled: true)
         XCTAssertTrue(enabled.isEnabled)
+    }
+}
+
+final class LanDiscoveryParsingTests: XCTestCase {
+    func testExtractMotdAndPort() {
+        let payload = "[MOTD]My World[/MOTD][AD]54321[/AD]"
+        XCTAssertEqual(LanWorldDiscoveryServiceImpl.extract(tag: "MOTD", from: payload), "My World")
+        XCTAssertEqual(LanWorldDiscoveryServiceImpl.extract(tag: "AD", from: payload), "54321")
     }
 }

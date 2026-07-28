@@ -53,6 +53,13 @@ public final class HomeViewModel: ObservableObject {
         errorMessage = nil
         defer { isLaunching = false }
 
+        do {
+            try await container.launchIntegrity.validate(instance: instance, settings: settings)
+        } catch {
+            errorMessage = error.localizedDescription
+            return
+        }
+
         let launchAccount: LaunchAccount
         do {
             if accountRecord.kind == .microsoft, accountRecord.isOffline == false {

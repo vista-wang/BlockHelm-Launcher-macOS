@@ -167,6 +167,84 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "该实例还没有模组。" } }
       }
     },
+    "Resources_NoContent" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No content in this folder yet." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "此目录还没有内容。" } }
+      }
+    },
+    "Resources_ResourcePacks" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Resource packs" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "资源包" } }
+      }
+    },
+    "Resources_Shaders" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Shaders" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "光影" } }
+      }
+    },
+    "Resources_Kind" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Type" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "类型" } }
+      }
+    },
+    "Resources_InstallDeps" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Install required dependencies" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "安装必需依赖" } }
+      }
+    },
+    "Multiplayer_Scan" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Scan LAN" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "扫描局域网" } }
+      }
+    },
+    "Multiplayer_Stop" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Stop" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "停止" } }
+      }
+    },
+    "Multiplayer_Hint" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open a Minecraft world to LAN on another computer on this network. Copy the address into Multiplayer → Direct Connection." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "在同一局域网的其他电脑上将世界开放至局域网，然后复制地址到多人游戏 → 直接连接。" } }
+      }
+    },
+    "Multiplayer_Empty" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No LAN worlds discovered yet." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "尚未发现局域网世界。" } }
+      }
+    },
+    "Multiplayer_Copy" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Copy address" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "复制地址" } }
+      }
+    },
+    "Multiplayer_Found" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%d LAN world(s)" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%d 个局域网世界" } }
+      }
+    },
+    "Multiplayer_Copied" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Copied %@" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已复制 %@" } }
+      }
+    },
+    "Multiplayer_Scanning" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Listening for LAN worlds…" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在监听局域网世界…" } }
+      }
+    },
     "Resources_NeedInstance" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Select a Fabric/Forge/Quilt/NeoForge instance first." } },

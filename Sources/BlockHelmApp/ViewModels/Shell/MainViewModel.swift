@@ -62,6 +62,7 @@ public final class MainViewModel: ObservableObject {
     @Published public var account: AccountViewModel
     @Published public var gameSettings: GameSettingsViewModel
     @Published public var resources: ResourcesViewModel
+    @Published public var multiplayer: MultiplayerViewModel
     @Published public var settingsPage: SettingsViewModel
 
     public init(container: AppContainer) {
@@ -72,6 +73,7 @@ public final class MainViewModel: ObservableObject {
         self.account = AccountViewModel(container: container)
         self.gameSettings = GameSettingsViewModel(container: container)
         self.resources = ResourcesViewModel(container: container)
+        self.multiplayer = MultiplayerViewModel(container: container)
         self.settingsPage = SettingsViewModel(container: container)
     }
 
