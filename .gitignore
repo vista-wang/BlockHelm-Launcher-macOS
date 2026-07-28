@@ -9,3 +9,10 @@ obj/
 TestResults/
 publish/
 .local-secrets/
+
+# Swift / Xcode
+.build/
+.swiftpm/
+DerivedData/
+*.xcodeproj
+xcuserdata/

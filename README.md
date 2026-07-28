@@ -69,6 +69,10 @@
 * Minecraft Java Edition
 * .NET 8 Desktop Runtime
 
+### macOS（进行中）
+
+SwiftUI 端口位于仓库根目录的 Swift Package（见 [MACOS.md](MACOS.md)）。当前为分阶段 MVP，Windows `Launcher.*` 仍为行为参考。
+
 \---
 
 ## English
@@ -137,3 +141,7 @@ Note: `BlockHelm Launcher` is an independently developed, third-party open-sourc
 * Windows 10 / 11
 * Minecraft: Java Edition
 * .NET 8 Desktop Runtime
+
+### macOS (in progress)
+
+The SwiftUI port lives in the repository-root Swift Package (see [MACOS.md](MACOS.md)). This is a phased MVP; the Windows `Launcher.*` tree remains the behavioral reference.
